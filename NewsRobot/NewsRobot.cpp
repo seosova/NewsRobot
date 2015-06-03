@@ -7,24 +7,42 @@
 ///             задаются через mql5 для возможности их оптимизации.
 
 #include "stdafx.h"
-#include <fstream>
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
 using namespace std;
-
-class RobotControll {
+class ReadCSV {
 protected:
-	char* m_input_news_file=0;
-	char m_input_statistic_file=0;
-	News m_current_news;
-
+	vector<string> m_date;
 public:
-	void SetNewsFile(char* c_input_news_file) { c_input_news_file = m_input_news_file; }
-	char* ShowNewsFile() { return m_input_news_file; }
-	void SetStatisticFile(char c_input_statistic_file) { c_input_statistic_file = m_input_statistic_file; }
-	char ShowStatisticFile() { return m_input_statistic_file; }
+	void ReadRow(istream& str) {	/// взято с http://stackoverflow.com/questions/1120140/how-can-i-read-and-parse-csv-files-in-c 
+		string line;
+		getline(str, line);
+		stringstream lineStream(line);
+		string cell;
+		m_date.clear();
+		while (getline(lineStream, cell, '\t'))
+		{
+			m_date.push_back(cell);
+		}
+	}
+	size_t size() const {
+		return m_date.size();
+	}
+	string const& operator[](size_t index) const {
+		return m_date[index];
+	}
 
-	void ReadNewsFile(char* c_news_file);
+
 };
+
+istream& operator>>(istream& str, ReadCSV& date)
+{
+	date.ReadRow(str);
+	return str;
+}
 class NewsAnalitic {
 
 };
@@ -36,7 +54,7 @@ protected:
 	int m_date_hour;
 	int m_date_minute;
 
-	char* m_currency;   
+	char* m_currency;
 	char* m_description;
 	char* m_impact;
 	char* m_actual;
@@ -46,16 +64,46 @@ protected:
 public:
 	News() {}
 	~News() {}
+	void SetDateYear(int c_date_year) { m_date_day = c_date_year; }
+	void SetDateMonth(int c_date_month) { m_date_month = c_date_month; }
+	void SetDateDay(int c_date_day) { m_date_day = c_date_day; }
+	void SetDateHour(int c_date_hour) { m_date_hour = c_date_hour; }
+	void SetDateMinute(int c_date_minute) { m_date_minute = c_date_minute; }
+	void SetCurrency(char* c_currency) { m_currency = c_currency; }
+	void SetDescription(char* c_description) { m_description = c_description; }
+	void SetImpact(char* c_impact) { m_impact = c_impact; }
+	void SetActual(char* c_actual) { m_actual = c_actual; }
+	void SetForecast(char* c_forecast) { m_forecast = c_forecast; }
+	void SetPrevious(char* c_previous) { m_previous = c_previous; }
 };
+
+class RobotControll {
+protected:
+	char* m_input_news_file = 0;
+	char m_input_statistic_file = 0;
+//	News m_current_news;
+
+public:
+	void SetNewsFile(char* c_input_news_file) { c_input_news_file = m_input_news_file; }
+	void SetStatisticFile(char c_input_statistic_file) { c_input_statistic_file = m_input_statistic_file; }
+
+	void ReadNewsFile();
+};
+
+void RobotControll::ReadNewsFile() {
+	ifstream	file(m_input_news_file);
+	ReadCSV Row;
+	while (file >> Row)
+	{
+		cout << "4th Element(" << Row[3] << ")\n";
+	}
+}
 
 int main() {
 	RobotControll GrandControll;
 	GrandControll.SetNewsFile("News_2007_2015.csv");
+	GrandControll.ReadNewsFile();
+
 	return 0;
 }
 
-void RobotControll::ReadNewsFile(char * c_news_file)
-{
-	ifstream infile(m_input_news_file);
-	cout << "END" << endl;
-}
